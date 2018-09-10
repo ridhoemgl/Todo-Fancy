@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <title>Login Page</title>
+</head>
+
+<body>
+    <script>
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '1029742597203600',
+                autoLogAppEvents: true,
+                xfbml: true,
+                version: 'v3.1'
+            });
+        };
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s); js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+        function checkLoginState() {
+            FB.getLoginStatus(function (response) {
+                console.log(response);
+                if (response !== undefined || response !== null) {
+                    $.ajax({
+                        url: `http://localhost:3000/fb-login`,
+                        method: "POST",
+                        headers: {
+                            token: response.authResponse.accessToken
+                        }
+                    })
+                        .done((response) => {
+                            console.log(response)
+                            // localStorage.setItem('token', response.token);
+                            // localStorage.setItem('email', response.email);
+                            // window.location.href = "http://localhost:8080/dashboard"
+                        })
+                        .fail((err) => {
+                            console.log(err);
+                        });
+                }
+            });
+        }
+    </script>
+
+    <div class="login-page">
+        <div class="form">
+            <form class="login-form">
+                <input type="text" placeholder="Email" />
+                <input type="password" placeholder="Password" />
+                <button>login</button>
+                <fb:login-button scope="public_profile,email" onlogin="checkLoginState();" width="500">
+                </fb:login-button>
+                <p class="message">Not registered? <a href="register.html">Create an account</a></p>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>
