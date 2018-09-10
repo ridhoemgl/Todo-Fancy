@@ -4,8 +4,38 @@ const axios = require('axios')
 module.exports = {
 
     fbLogin: (req, res) => {
-        console.log(req.headers.token);
-        
+        let fbToken = req.headers.token
+        axios({
+            method:'get',
+            url:`https://graph.facebook.com/me?fields=id,name,email&&access_token=${fbToken}`
+        })
+        .then(response => {
+            console.log(response.data);
+            User
+                .findOne({
+                    email: response.data.email
+                })
+                .then(data => {
+                    if(data){
+                        // redirect login
+                        console.log('redirect login');
+                    }else{
+                        // create account
+                        User
+                            .create({
+                                name: response.data.name,
+                                email: response.data.email,
+                                password: '123'
+                            })
+                            .then(user => {
+                                console.log(user);
+                            })
+                    }
+                })
+        })
+        .catch(err => {
+            console.log(err);
+        })
         
     },
     signin: (req, res) => {
