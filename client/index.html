@@ -20,6 +20,7 @@
                 version: 'v3.1'
             });
         };
+
         (function (d, s, id) {
             var js, fjs = d.getElementsByTagName(s)[0];
             if (d.getElementById(id)) { return; }
@@ -30,7 +31,6 @@
 
         function checkLoginState() {
             FB.getLoginStatus(function (response) {
-                console.log(response);
                 if (response !== undefined || response !== null) {
                     $.ajax({
                         url: `http://localhost:3000/fb-login`,
@@ -40,10 +40,12 @@
                         }
                     })
                         .done((response) => {
-                            console.log(response)
-                            // localStorage.setItem('token', response.token);
-                            // localStorage.setItem('email', response.email);
-                            // window.location.href = "http://localhost:8080/dashboard"
+                            if(!response.token){
+                                window.location.href = "index.html"
+                            }else{
+                                localStorage.setItem('token', response.token);
+                                window.location.href = "dashboard.html"
+                            }
                         })
                         .fail((err) => {
                             console.log(err);
@@ -52,15 +54,16 @@
             });
         }
     </script>
-
     <div class="login-page">
         <div class="form">
             <form class="login-form">
                 <input type="text" placeholder="Email" />
                 <input type="password" placeholder="Password" />
                 <button>login</button>
-                <fb:login-button scope="public_profile,email" onlogin="checkLoginState();" width="500">
-                </fb:login-button>
+                <p>or</p>
+                <div class="fb">
+                    <fb:login-button size:"large" scope="public_profile,email" onlogin="checkLoginState();"> Login with Facebook </fb:login-button>
+                </div>
                 <p class="message">Not registered? <a href="register.html">Create an account</a></p>
             </form>
         </div>

@@ -1,5 +1,6 @@
 const User = require('../models/user')
 const axios = require('axios')
+const jwt = require('jsonwebtoken')
 
 module.exports = {
 
@@ -10,31 +11,48 @@ module.exports = {
             url:`https://graph.facebook.com/me?fields=id,name,email&&access_token=${fbToken}`
         })
         .then(response => {
-            console.log(response.data);
             User
                 .findOne({
                     email: response.data.email
                 })
                 .then(data => {
-                    if(data){
-                        // redirect login
-                        console.log('redirect login');
-                    }else{
-                        // create account
+                    if(data == null){
                         User
-                            .create({
-                                name: response.data.name,
-                                email: response.data.email,
-                                password: '123'
+                        .create({
+                            name: response.data.name,
+                            email: response.data.email,
+                            password: process.env.FB_DEFAULT_PASSWORD
+                        })
+                        .then(user => {
+                            res.status(201).json({
+                                msg: `create account success`,
+                                data: user
                             })
-                            .then(user => {
-                                console.log(user);
-                            })
+                        })
+                    }else{
+                        jwt.sign({
+                            userId: data.id,
+                            email: data.email,
+                            name: data.name
+                        }, process.env.JWT_SECRET_KEY, (err, token) => {
+                            if(!err){
+                                res.status(200).json({
+                                    msg: 'login success',
+                                    token: token
+                                })
+                            }else{
+                                res.status(401).json({
+                                    msg: `Unauthorized`
+                                })
+                            }
+                        })
                     }
                 })
         })
         .catch(err => {
-            console.log(err);
+            res.status(500).json({
+                msg: err.message
+            })
         })
         
     },
