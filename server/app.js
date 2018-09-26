@@ -4,7 +4,7 @@ const cors = require('cors')
 
 require('dotenv').config()
 
-const userRoute = require('./routes/userRoute')
+const index = require('./routes/index')
 
 const app = express()
 app.use(express.urlencoded({ extended:false }))
@@ -20,7 +20,7 @@ db.once('open', function() {
     console.log('database connected...');
 });
 
-app.use('/', userRoute)
+app.use('/', index)
 
 app.listen(3000, () => {
     console.log('running on port 3000');

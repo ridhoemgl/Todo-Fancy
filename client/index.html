@@ -2,73 +2,128 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="styles/main.css">
-    <title>Login Page</title>
+    <title>e-Commerce</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 </head>
 
 <body>
-    <script>
-        window.fbAsyncInit = function () {
-            FB.init({
-                appId: '1029742597203600',
-                autoLogAppEvents: true,
-                xfbml: true,
-                version: 'v3.1'
-            });
-        };
-
-        (function (d, s, id) {
-            var js, fjs = d.getElementsByTagName(s)[0];
-            if (d.getElementById(id)) { return; }
-            js = d.createElement(s); js.id = id;
-            js.src = "https://connect.facebook.net/en_US/sdk.js";
-            fjs.parentNode.insertBefore(js, fjs);
-        }(document, 'script', 'facebook-jssdk'));
-
-        function checkLoginState() {
-            FB.getLoginStatus(function (response) {
-                if (response !== undefined || response !== null) {
-                    $.ajax({
-                        url: `http://localhost:3000/fb-login`,
-                        method: "POST",
-                        headers: {
-                            token: response.authResponse.accessToken
-                        }
-                    })
-                        .done((response) => {
-                            if(!response.token){
-                                window.location.href = "index.html"
-                            }else{
-                                localStorage.setItem('token', response.token);
-                                window.location.href = "dashboard.html"
-                            }
-                        })
-                        .fail((err) => {
-                            console.log(err);
-                        });
-                }
-            });
-        }
-    </script>
-    <div class="login-page">
-        <div class="form">
-            <form class="login-form">
-                <input type="text" placeholder="Email" />
-                <input type="password" placeholder="Password" />
-                <button>login</button>
-                <p>or</p>
-                <div class="fb">
-                    <fb:login-button size:"large" scope="public_profile,email" onlogin="checkLoginState();"> Login with Facebook </fb:login-button>
+    <div id="app">
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Todo-Fancy</a>
                 </div>
-                <p class="message">Not registered? <a href="register.html">Create an account</a></p>
+                <div class="nav navbar-nav navbar-right" v-if="isLogin">
+                    <li><a href="#"><span class="glyphicon glyphicon-off"></span> Logout</a></li>
+                </div>
+                <div class="nav navbar-nav navbar-right" v-else>
+                    <!-- Sign Up Modal content-->
+                    <li><a href="#" data-toggle="modal" data-target="#modalSignUp"><span class="glyphicon glyphicon-user"></span>
+                            Sign Up</a></li>
+                    <div class="modal fade" id="modalSignUp" role="dialog">
+                        <div class="modal-dialog modal-sm text-center">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                            aria-hidden="true">x</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="form-group">
+                                            <label>Full Name:</label>
+                                            <input type="text" class="form-control" placeholder="Full Name" v-model="fullname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Email:</label>
+                                            <input type="text" class="form-control" placeholder="Email" v-model="email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Password:</label>
+                                            <input type="text" class="form-control" placeholder="Password" v-model="password">
+                                        </div>
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-info" data-dismiss="modal" v-on:click="userSignup">Sign
+                                        Up</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <li><a href="#" data-toggle="modal" data-target="#modalLogin"><span class="glyphicon glyphicon-log-in"></span>
+                            Login</a></li>
+                    <div class="modal fade" id="modalLogin" role="dialog">
+                        <div class="modal-dialog modal-sm text-center">
+                            <!-- Login Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                            aria-hidden="true">x</span></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="form-group">
+                                            <label>Email:</label>
+                                            <input type="text" class="form-control" placeholder="Email" v-model="email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Password:</label>
+                                            <input type="text" class="form-control" placeholder="Password" v-model="password">
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-info" data-dismiss="modal" v-on:click="userLogin">Login</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </nav>
+
+        <div class="form-group">
+            <h1>Todo-Fancy</h1>
+            <p><i>Add New Todo</i></p>
+            <form role="form">
+                <input type="text" class="form-control" placeholder="Your Task" v-model="title">
             </form>
+            <input class="btn btn-info w-100" type="submit" value="Add" v-on:click="addTodos" data-dismiss="modal">
+        </div>
+
+        <div class="center">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody v-for="todo in todos">
+                    <tr>
+                        <td> {{ todo.title }} </td>
+                        <td v-if="!todo.status"> <button type="button" class="btn btn-danger btn-sm" v-on:click="changeStatus(todo._id)">uncomplete</button>
+                        </td>
+                        <td v-else> <button type="button" class="btn btn-success btn-sm" disabled>completed</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
+    <script src="main.js"></script>
 </body>
 
 </html>

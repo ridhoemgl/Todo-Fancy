@@ -3,15 +3,12 @@ const Schema = mongoose.Schema;
 
 const todoSchema = new Schema({
     userId:{ type: Schema.Types.ObjectId, ref: 'User' },
-    name:{
+    title:{
         type: String
     },
-    description:{
-        type: String
-    },
-    duoDate:{
-        type: Date,
-        default: Date.now
+    status: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true

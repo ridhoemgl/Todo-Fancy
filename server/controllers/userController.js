@@ -1,87 +1,56 @@
 const User = require('../models/user')
-const axios = require('axios')
 const jwt = require('jsonwebtoken')
+const { becryptPassword } = require('../helpers/helper')
 
 module.exports = {
-
-    fbLogin: (req, res) => {
-        let fbToken = req.headers.token
-        axios({
-            method:'get',
-            url:`https://graph.facebook.com/me?fields=id,name,email&&access_token=${fbToken}`
-        })
-        .then(response => {
-            User
-                .findOne({
-                    email: response.data.email
-                })
-                .then(data => {
-                    if(data == null){
-                        User
-                        .create({
-                            name: response.data.name,
-                            email: response.data.email,
-                            password: process.env.FB_DEFAULT_PASSWORD
-                        })
-                        .then(user => {
-                            res.status(201).json({
-                                msg: `create account success`,
-                                data: user
-                            })
-                        })
-                    }else{
-                        jwt.sign({
-                            userId: data.id,
-                            email: data.email,
-                            name: data.name
-                        }, process.env.JWT_SECRET_KEY, (err, token) => {
-                            if(!err){
-                                res.status(200).json({
-                                    msg: 'login success',
-                                    token: token
-                                })
-                            }else{
-                                res.status(401).json({
-                                    msg: `Unauthorized`
-                                })
-                            }
-                        })
-                    }
-                })
-        })
-        .catch(err => {
-            res.status(500).json({
-                msg: err.message
-            })
-        })
-        
-    },
     signin: (req, res) => {
+        console.log(req.body);
+        
         User
             .findOne({
-                email: req.params.email
+                email: req.body.email
             })
             .then(user => {
                 if(user){
+                    console.log(user);
                     
+                    if(becryptPassword(user.password, req.body.password)){
+                        console.log('if');
+                        
+                        let token = jwt.sign({
+                            id : user.id,
+                            name : user.name,
+                            email : user.email
+                        }, JWT_SECRET_KEY)
+                        res.status(200).json({
+                            msg : `login success`,
+                            token
+                        })
+                    }else{
+                        res.status(404).json({
+                            msg: 'password wrong'
+                        })    
+                    }
                 }else{
                     res.status(404).json({
-                        msg: `User Not Found`
-                    })  
+                        msg: 'email wrong'
+                    })
                 }
             })
             .catch(err => {
                 res.status(500).json({
-                    msg: err.message
+                    msg: err
                 })
             })
     },
-    createUser: (req, res) => {
+    signup: (req, res) => {
+        console.log(req.body);
+        
         User
             .create({
                 name: req.body.name,
                 email: req.body.email,
-                password:  req.body.password
+                password: req.body.password
             })
             .then(user => {
                 res.status(201).json({
